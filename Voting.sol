@@ -30,7 +30,9 @@ contract Voting is Ownable{
 
     WorkflowStatus public status;
     resultStatus public unanimity;
+    address[] public Voters;
     uint winningProposalId;
+    uint amountWinning;
     mapping(address => Voter) whitelist;
     Proposal[] public Proposals;
 
@@ -97,16 +99,36 @@ contract Voting is Ownable{
 
     function displayVotes()external onlyOwner votingClose returns(bool){
         status = WorkflowStatus.VotesTallied;
-        countVotes();
+        (winningProposalId, amountWinning) = countVotes();
         if(unanimity == resultStatus.finish){
             return true;
         }
             return false;
+    }
 
+    function retry()external onlyOwner votingClose{
+        require(unanimity == resultStatus.equality, "Sorry, democraty talks");
+        for(uint i; i < Proposals.length; i++){
+            Proposals[i].voteCount =0;
+        }
+        for(uint j; j < Voters.length; j++){
+            whitelist[Voters[j]].hasVoted = false;
+            whitelist[Voters[j]].votedProposalId = 0;
+        }
+        winningProposalId = 0;
+        amountWinning = 0;
+        status = WorkflowStatus.VotingSessionStarted;
     }
 
     function newCycle()external onlyOwner voteDisplaying{
         status = WorkflowStatus.RegisteringVoters;
+        winningProposalId = 0;
+        amountWinning = 0;
+        delete Proposals;
+        for(uint j; j < Voters.length; j++){
+            whitelist[Voters[j]].hasVoted = false;
+            whitelist[Voters[j]].votedProposalId = 0;
+        }
     }
 
     /*
@@ -114,6 +136,7 @@ contract Voting is Ownable{
     */
     function register(address _address)external onlyOwner registering {
         whitelist[_address].isRegistered = true;
+        Voters.push(_address);
     }
 
     function propose(string memory _description)external onlyRegistred proposalsRegistering{
@@ -139,20 +162,44 @@ contract Voting is Ownable{
         }
         uint count;
         for (uint j; j < Proposals.length; j++){
-            if(tmp == Proposals[j].voteCount){                      //Check if there is not equality
+            if(tmp == Proposals[j].voteCount){                      //Check if there is equality
                 count ++;
             }
         }
         if(count > 1){
             unanimity = resultStatus.equality; 
         }
+        else{
+            unanimity = resultStatus.finish;
+        }
 
         return(index, tmp);
     }
+
+    function result()external view voteDisplaying returns(uint, uint){
+        return (winningProposalId, amountWinning);
+    }
+
+    function Unanimity()external view voteDisplaying returns(bool){
+        if(unanimity == resultStatus.finish){
+            return true;
+        }
+            return false;
+    }
+
+    function seeCycleStatus()external view returns(WorkflowStatus){
+        return status;
+    }
     
+    function seeVoter(address _address)external view returns(Voter memory){
+        return whitelist[_address];
+    }
+
     //DEVELOPPEMENT
 
     function countProposals()external view returns(uint){
         return Proposals.length;
     }
+
+
 }
