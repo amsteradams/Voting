@@ -1,5 +1,9 @@
 # Fonctionnalités supplementaires : 
 
-## Egalité : 
+## Gestion d'égalité : 
 
-J'ai crée un enum 'resultStatus' pour que les gens sachent si un vote est unanime ou pas. Si il y a égalité, l'admin peut choisir de recommencer le vote (en gardant les propositions)
+Si au cours de la phase 'votes tallied' l'enum unanimity est 'equality', l'admin a la posibilité de reinitialiser le vote en gardant les propositions
+
+## Visibilité d'abstention : 
+
+Tout le monde peut voir le pourcentage d'abstention pendant la phase votes tallied

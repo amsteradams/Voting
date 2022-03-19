@@ -273,6 +273,19 @@ contract Voting is Ownable{
     }
 
     /*
+        return abstentionism (%)
+    */
+    function seeAbstention()external view voteDisplaying returns(uint){
+        uint count;
+        for(uint i; i<Voters.length; i++){
+            if(whitelist[Voters[i]].hasVoted == false){
+                count ++;
+            }
+        }
+        return ((count * 100) / Voters.length);
+    }
+
+    /*
         return voting state
     */
     function seeCycleStatus()external view returns(WorkflowStatus){
@@ -292,6 +305,4 @@ contract Voting is Ownable{
     function countProposals()external view returns(uint){
         return Proposals.length;
     }
-
-
 }
