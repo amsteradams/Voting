@@ -14,4 +14,6 @@ Possibilité de recommencer un nouveau cycle et donc un nouveau vote
 
 # Note pour Cyril : 
 
-La fonction pour recuperer le winner s'appelle 'result'. Elle retourne l'id de la proposition + le nombre de vote.
+-La fonction pour recuperer le winner s'appelle 'result'. Elle retourne l'id de la proposition + le nombre de vote
+
+-J'ai peut être trop factorisé, mais je trouve que ca rend les fonctions beaucoup plus lisibles
