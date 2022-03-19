@@ -154,7 +154,7 @@ contract Voting is Ownable{
         -restart voting but keep all proposals
         -change voting state to VOTING SESSIONS STARTED
     */
-    function retry()external onlyOwner votingClose{
+    function retry()external onlyOwner voteDisplaying{
         require(unanimity == resultStatus.equality, "Sorry, democraty talks");
         for(uint i; i < Proposals.length; i++){
             Proposals[i].voteCount =0;
@@ -180,9 +180,11 @@ contract Voting is Ownable{
         amountWinning = 0;
         delete Proposals;
         for(uint j; j < Voters.length; j++){
+            whitelist[Voters[j]].isRegistered = false;
             whitelist[Voters[j]].hasVoted = false;
             whitelist[Voters[j]].votedProposalId = 0;
         }
+        delete Voters;
         unanimity = resultStatus.notStarted;
     }
 
@@ -190,6 +192,11 @@ contract Voting is Ownable{
         admin register someone
     */
     function register(address _address)external onlyOwner registering {
+        for(uint i; i<Voters.length; i++){
+            if(Voters[i] == _address){
+                revert();                               //Mean that _address is already regitered
+            }
+        }
         whitelist[_address].isRegistered = true;
         Voters.push(_address);
         emit VoterRegistered(_address);
