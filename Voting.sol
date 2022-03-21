@@ -203,7 +203,7 @@ contract Voting is Ownable{
     }
 
     /*
-        regitered address add proposal
+        add proposal
     */
     function propose(string memory _description)external onlyRegistred proposalsRegistering{
         Proposal memory p = Proposal(_description, 0);
@@ -256,7 +256,7 @@ contract Voting is Ownable{
 
     /*
         Display the winning proposal id with its vote amount
-        Everybody can see it, not only registered
+        Everybody can see it, not only registered addresses
     */
     function result()external view voteDisplaying returns(uint, uint){
         return (winningProposalId, amountWinning);
