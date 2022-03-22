@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.12;
+pragma solidity 0.8.13;
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol";
 contract Voting is Ownable{
     struct Voter{
@@ -29,8 +29,8 @@ contract Voting is Ownable{
     }
 
     WorkflowStatus public status; //vote state
-    resultStatus public unanimity; // *
-    address[] public Voters; //Used to restart whitelist's vote if admin choose to restart voting due to an equality
+    resultStatus public unanimity;
+    address[] public Voters; 
     uint winningProposalId;
     uint amountWinning; //Amount of vote for the winning proposal
     mapping(address => Voter) whitelist;
@@ -44,57 +44,36 @@ contract Voting is Ownable{
 
     //MODIFIERS
 
-    /*
-        Check if actual voting state is 'registeringVoters'
-    */
     modifier registering(){
         require(status == WorkflowStatus.RegisteringVoters, "Not possible now");
         _;
     }
 
-    /*
-        Check if actual voting state is 'ProposalsRegistrationStarted'
-    */
     modifier proposalsRegistering(){
         require(status == WorkflowStatus.ProposalsRegistrationStarted, "Not possible now");
         _;
     }
 
-    /*
-        Check if actual voting state is 'ProposalsRegistrationEnded'
-    */
     modifier proposalsRegisteringEnded(){
         require(status == WorkflowStatus.ProposalsRegistrationEnded, "Not possible now");
         _;
     }
 
-    /*
-        Check if actual voting state is 'VotingSessionStarted'
-    */
     modifier voting(){
         require(status == WorkflowStatus.VotingSessionStarted, "Not possible now");
         _;
     }
 
-    /*
-        Check if actual voting state is 'VotingSessionsEnded'
-    */
     modifier votingClose(){
         require(status == WorkflowStatus.VotingSessionEnded, "Not possible now");
         _;
     }
 
-    /*
-        Check if actual voting state is 'VotesTallied'
-    */
     modifier voteDisplaying(){
         require(status == WorkflowStatus.VotesTallied, "Not possible now");
         _;
     }
 
-    /*
-        Check if msg.sender is regitered
-    */
     modifier onlyRegistred(){
         require(whitelist[msg.sender].isRegistered == true, "Sorry, you're not allowed to vote");
         _;
@@ -103,7 +82,7 @@ contract Voting is Ownable{
     //STATUS CHANGING FUNCTIONS
 
     /*
-        change voting state REGISTERING to PROPOSALS REGISTRATION STARTED
+        REGISTERING to PROPOSALS REGISTRATION STARTED
     */
     function startProposalsRegistering()external onlyOwner registering{
         status = WorkflowStatus.ProposalsRegistrationStarted;
@@ -111,7 +90,7 @@ contract Voting is Ownable{
     }
 
     /*
-        change voting state PROPOSALS REGISTRATION STARTED to PROPOSALS REGISTRATION ENDED
+        PROPOSALS REGISTRATION STARTED to PROPOSALS REGISTRATION ENDED
     */
     function endProposalsRegistering()external onlyOwner proposalsRegistering{
         status = WorkflowStatus.ProposalsRegistrationEnded;
@@ -119,7 +98,7 @@ contract Voting is Ownable{
     }
 
     /*
-        change voting state PROPOSALS REGISTRATION ENDED to VOTING SESSION STARTED
+        PROPOSALS REGISTRATION ENDED to VOTING SESSION STARTED
     */
     function startVotingSession()external onlyOwner proposalsRegisteringEnded{
         status = WorkflowStatus.VotingSessionStarted;
@@ -127,7 +106,7 @@ contract Voting is Ownable{
     }
 
     /*
-        change voting state VOTING SESSIONS STARTED to VOTING SESSION ENDED
+        VOTING SESSIONS STARTED to VOTING SESSION ENDED
     */
     function endVotingSession()external onlyOwner voting{
         status = WorkflowStatus.VotingSessionEnded;
@@ -170,7 +149,6 @@ contract Voting is Ownable{
     }
 
     /*
-        -this function is only usable if voting state is VOTES TALLIED
         -reset everything
     */
     function newCycle()external onlyOwner voteDisplaying{
@@ -206,6 +184,11 @@ contract Voting is Ownable{
         add proposal
     */
     function propose(string memory _description)external onlyRegistred proposalsRegistering{
+        for(uint i; i < Proposals.length; i++){
+            if(keccak256(abi.encodePacked(Proposals[i].description)) == keccak256(abi.encodePacked(_description))){
+                revert();
+            }
+        }
         Proposal memory p = Proposal(_description, 0);
         Proposals.push(p);
     }
@@ -275,7 +258,7 @@ contract Voting is Ownable{
     /*
         return abstentionism (%)
     */
-    function seeAbstention()external view voteDisplaying returns(uint){
+    function seeAbstention()external view returns(uint){
         uint count;
         for(uint i; i<Voters.length; i++){
             if(whitelist[Voters[i]].hasVoted == false){
