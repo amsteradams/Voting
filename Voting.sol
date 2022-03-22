@@ -109,6 +109,7 @@ contract Voting is Ownable{
         VOTING SESSIONS STARTED to VOTING SESSION ENDED
     */
     function endVotingSession()external onlyOwner voting{
+        require(seeAbstention() <= 50, "Abstention is over 50%");
         status = WorkflowStatus.VotingSessionEnded;
         emit WorkflowStatusChange(WorkflowStatus.VotingSessionStarted, WorkflowStatus.VotingSessionEnded);
     }
@@ -258,7 +259,7 @@ contract Voting is Ownable{
     /*
         return abstentionism (%)
     */
-    function seeAbstention()external view returns(uint){
+    function seeAbstention()public view returns(uint){
         uint count;
         for(uint i; i<Voters.length; i++){
             if(whitelist[Voters[i]].hasVoted == false){
